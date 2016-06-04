@@ -325,6 +325,24 @@ func (this *FdfsClient) TruncAppenderByFilename(remoteFileId string, truncatedFi
 
 	return store.storageTruncateFile(tc, storeServ, remoteFilename, truncatedFileSize)
 }
+
+func (this *FdfsClient) AppendByBuffer(fileBuffer []byte, groupName string, remoteFileName string) error {
+	tc := &TrackerClient{this.trackerPool}
+
+	storeServ, err := tc.trackerQueryStorageUpdate(groupName, remoteFileName)
+	if err != nil {
+		return err
+	}
+
+	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
+	if err != nil {
+		return err
+	}
+
+	store := &StorageClient{storagePool}
+	return store.storageAppendByBuffer(tc, storeServ, fileBuffer, groupName, remoteFileName)
+}
+
 func (this *FdfsClient) AppendByFileName(localFileName string, groupName string, remoteFileName string) error {
 	tc := &TrackerClient{this.trackerPool}
 
