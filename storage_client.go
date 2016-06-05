@@ -404,7 +404,7 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 	return dr, nil
 
 }
-func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName string) (*fileInfo, error) {
+func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName string) (*FileInfo, error) {
 	var (
 		conn     net.Conn
 		recvBuff []byte
@@ -472,11 +472,13 @@ func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName
 		return nil, err
 	}
 	//logger.Info("ip:" + ipAddr)
-	return &fileInfo{createTimeStamp,
-		crc32,
-		0,
-		fileSize,
-		ipAddr}, nil
+	return &FileInfo{
+		CreateTimeStamp: createTimeStamp,
+		CRC32:           crc32,
+		SourceId:        0,
+		FileSize:        fileSize,
+		SourceIpAddress: ipAddr,
+	}, nil
 
 }
 

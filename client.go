@@ -270,7 +270,7 @@ func (this *FdfsClient) DownloadToFile(localFilename string, remoteFileId string
 
 	return store.storageDownloadToFile(tc, storeServ, localFilename, offset, downloadSize, remoteFilename)
 }
-func (this *FdfsClient) QueryFileInfo(groupName string, remoteFileName string) (*fileInfo, error) {
+func (this *FdfsClient) QueryFileInfo(groupName string, remoteFileName string) (*FileInfo, error) {
 	tc := &TrackerClient{this.trackerPool}
 	storeServ, err := tc.trackerQueryStorageFetch(groupName, remoteFileName)
 	if err != nil {

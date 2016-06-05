@@ -3,8 +3,9 @@ package fdfs_client
 import (
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"os"
+
+	"github.com/Sirupsen/logrus"
 	//"strings"
 	"testing"
 	"time"
@@ -285,7 +286,7 @@ func TestUploadAppenderByFilename(t *testing.T) {
 	}
 
 	fileInfo.Print()
-	fileSize := fileInfo.fileSize
+	fileSize := fileInfo.FileSize
 	//group1/M00/00/03/wKj_glc-fQiEISCUAAAAAChSBpE4174280
 	if deleteResponse, err = fdfsClient.TruncAppenderByFilename(uploadResponse.RemoteFileId, fileSize/2); err != nil {
 		t.Errorf("Truncate Appender File error %s", err.Error())
@@ -298,8 +299,8 @@ func TestUploadAppenderByFilename(t *testing.T) {
 	}
 
 	fileInfo.Print()
-	if fileInfo.fileSize != fileSize/2 {
-		t.Errorf("filesize:%d != %d", fileInfo.fileSize, fileSize/2)
+	if fileInfo.FileSize != fileSize/2 {
+		t.Errorf("filesize:%d != %d", fileInfo.FileSize, fileSize/2)
 	}
 
 	if err = fdfsClient.AppendByFileName("x1", groupName, remoteFileName); err != nil {
@@ -311,9 +312,13 @@ func TestUploadAppenderByFilename(t *testing.T) {
 	}
 	fileInfo.Print()
 
-	offset := fileInfo.fileSize
-	if err = fdfsClient.ModifyByFileName("x1", offset, groupName, remoteFileName); err != nil {
+	offset := fileInfo.FileSize
+	logger.Debug("文件的大小:", offset, "修改后应该为：", offset+79191870)
+	logger.Debug(groupName, " ", remoteFileName)
+	if err = fdfsClient.ModifyByFileName("storage_client.go", offset-offset, groupName, remoteFileName); err != nil {
 		t.Error("can't modify file")
+	} else {
+		logger.Debug("更改文件成功")
 	}
 
 	fileInfo, err = fdfsClient.getFileInfo(uploadResponse.RemoteFileId)
@@ -476,8 +481,8 @@ func TestGetFileInfo(t *testing.T) {
 	if err != nil {
 		t.Error("get file info error" + err.Error())
 	}
-	logger.Info("createtime:" + time.Unix(int64(fileInfo.createTimeStamp), 0).String())
-	logger.Infof("crc:%d", fileInfo.crc32)
-	logger.Info("source ip:" + fileInfo.sourceIpAddress)
-	logger.Infof("filesize:%d", fileInfo.fileSize)
+	logger.Info("createtime:" + time.Unix(int64(fileInfo.CreateTimeStamp), 0).String())
+	logger.Infof("crc:%d", fileInfo.CRC32)
+	logger.Info("source ip:" + fileInfo.SourceIpAddress)
+	logger.Infof("filesize:%d", fileInfo.FileSize)
 }

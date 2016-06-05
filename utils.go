@@ -25,12 +25,19 @@ type Errno struct {
 	status int
 }
 
-type fileInfo struct {
-	createTimeStamp int32
-	crc32           int32
-	sourceId        int
-	fileSize        int64
-	sourceIpAddress string
+// type fileInfo struct {
+// 	createTimeStamp int32
+// 	crc32           int32
+// 	sourceId        int
+// 	fileSize        int64
+// 	sourceIpAddress string
+// }
+type FileInfo struct {
+	CreateTimeStamp int32
+	CRC32           int32
+	SourceId        int
+	FileSize        int64
+	SourceIpAddress string
 }
 
 func (e Errno) Error() string {
@@ -99,7 +106,7 @@ func inet_ntoa(bytes []byte) (string, error) {
 	return net.IPv4(bytes[0], bytes[1], bytes[2], bytes[3]).String(), nil
 }
 
-func (this *FdfsClient) getFileInfo(remotFileId string) (*fileInfo, error) {
+func (this *FdfsClient) getFileInfo(remotFileId string) (*FileInfo, error) {
 	parts, err := splitRemoteFileId(remotFileId)
 	if err != nil {
 		return nil, err
@@ -108,7 +115,7 @@ func (this *FdfsClient) getFileInfo(remotFileId string) (*fileInfo, error) {
 	if fileLen < FDFS_NORMAL_LOGIC_FILENAME_LENGTH {
 		return nil, errors.New("error remoteFileName")
 	}
-	fileInfo := &fileInfo{}
+	fileInfo := &FileInfo{}
 	var buffer bytes.Buffer
 	buffer.WriteString(parts[1][FDFS_LOGIC_FILE_PATH_LEN : FDFS_LOGIC_FILE_PATH_LEN+FDFS_FILENAME_BASE64_LENGTH])
 	buffer.WriteString("=")
@@ -121,7 +128,7 @@ func (this *FdfsClient) getFileInfo(remotFileId string) (*fileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	fileInfo.sourceIpAddress = ip
+	fileInfo.SourceIpAddress = ip
 
 	b_buf := bytes.NewBuffer(decode[4:])
 
@@ -153,18 +160,17 @@ func (this *FdfsClient) getFileInfo(remotFileId string) (*fileInfo, error) {
 		logger.Info("appender file")
 		return this.QueryFileInfo(parts[0], parts[1])
 
-	} else {
-		logger.Info("not appender file")
 	}
-	fileInfo.createTimeStamp = createTimeStamp
-	fileInfo.crc32 = crc32
+
+	fileInfo.CreateTimeStamp = createTimeStamp
+	fileInfo.CRC32 = crc32
 	return fileInfo, nil
 
 }
-func (fileInfo *fileInfo) Print() {
+func (fileInfo *FileInfo) Print() {
 
-	logger.Info("createtime:" + time.Unix(int64(fileInfo.createTimeStamp), 0).String())
-	logger.Infof("crc:%d", fileInfo.crc32)
-	logger.Info("source ip:" + fileInfo.sourceIpAddress)
-	logger.Infof("filesize:%d", fileInfo.fileSize)
+	logger.Info("createtime:" + time.Unix(int64(fileInfo.CreateTimeStamp), 0).String())
+	logger.Infof("crc:%d", fileInfo.CRC32)
+	logger.Info("source ip:" + fileInfo.SourceIpAddress)
+	logger.Infof("filesize:%d", fileInfo.FileSize)
 }
