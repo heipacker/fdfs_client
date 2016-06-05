@@ -97,6 +97,18 @@ func (this *StorageClient) storageAppendByfileName(tc *TrackerClient, storeServ 
 	logger.Info("unknown filesize", fileSize)
 	return this.storageDoAppendFile(fileSize, localFileName, groupName, remoteFileName)
 }
+
+func (this *StorageClient) storagstorageModifyByBuffer(tc *TrackerClient, storeServ *StorageServer, fileBuffer []byte,
+	offset int64, groupName string, remoteFileName string) error {
+	if remoteFileName == "" || groupName == " " {
+		return errors.New("Invalid group name or append file name")
+	}
+
+	fileSize := int64(len(fileBuffer))
+	logger.Info("unknown filesize", fileSize)
+	return this.storageDoModifyBuffer(fileSize, fileBuffer, offset, groupName, remoteFileName)
+}
+
 func (this *StorageClient) storageModifyByfileName(tc *TrackerClient, storeServ *StorageServer, localFileName string,
 	offset int64, groupName string, remoteFileName string) error {
 	if remoteFileName == "" || groupName == " " {
@@ -560,6 +572,7 @@ func (this *StorageClient) storageDoAppendFile(fileSize int64, localFileName str
 
 	return nil
 }
+
 func (this *StorageClient) storageDoModifyFile(fileSize int64, localFileName string, offset int64,
 	groupName string, remoteFileName string) error {
 	var (
@@ -598,5 +611,45 @@ func (this *StorageClient) storageDoModifyFile(fileSize int64, localFileName str
 
 	logger.Infof("pkg_len:%d", th.pkgLen)
 
+	return nil
+}
+
+func (this *StorageClient) storageDoModifyBuffer(fileSize int64, fileBuffer []byte, offset int64,
+	groupName string, remoteFileName string) error {
+	var (
+		conn   net.Conn
+		reqBuf []byte
+		err    error
+	)
+
+	conn, err = this.pool.Get()
+	defer conn.Close()
+	if err != nil {
+		return err
+	}
+	th := &trackerHeader{}
+	th.cmd = STORAGE_PROTO_CMD_MODIFY_FILE
+	appenderFileNameLen := len(remoteFileName)
+	th.pkgLen = int64(FDFS_PROTO_PKG_LEN_SIZE*3+appenderFileNameLen) + fileSize
+	th.sendHeader(conn)
+	req := &modifyFileRequst{}
+	req.appendernameLen = int64(appenderFileNameLen)
+	req.offset = offset
+	req.modifiedFileLen = fileSize
+	req.appenderFileName = remoteFileName
+
+	reqBuf, err = req.marshal()
+	if err != nil {
+		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		return err
+	}
+	TcpSendData(conn, reqBuf)
+	TcpSendData(conn, fileBuffer)
+	th.recvHeader(conn)
+	if th.status != 0 {
+		return Errno{int(th.status)}
+	}
+
+	logger.Infof("pkg_len:%d", th.pkgLen)
 	return nil
 }

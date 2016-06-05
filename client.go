@@ -359,6 +359,24 @@ func (this *FdfsClient) AppendByFileName(localFileName string, groupName string,
 	store := &StorageClient{storagePool}
 	return store.storageAppendByfileName(tc, storeServ, localFileName, groupName, remoteFileName)
 }
+
+func (this *FdfsClient) ModifyByBuffer(fileBuffer []byte, offset int64, groupName string, remoteFileName string) error {
+	tc := &TrackerClient{this.trackerPool}
+
+	storeServ, err := tc.trackerQueryStorageUpdate(groupName, remoteFileName)
+	if err != nil {
+		return err
+	}
+
+	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
+	if err != nil {
+		return err
+	}
+
+	store := &StorageClient{storagePool}
+	return store.storagstorageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
+}
+
 func (this *FdfsClient) ModifyByFileName(localFileName string, offset int64, groupName string, remoteFileName string) error {
 	tc := &TrackerClient{this.trackerPool}
 
