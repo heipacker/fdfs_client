@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/laohanlinux/go-logger/logger"
 )
 
 type StorageClient struct {
@@ -179,7 +181,7 @@ func (this *StorageClient) storageUploadFile(tc *TrackerClient,
 		reqBuf, err = req.marshal()
 	}
 	if err != nil {
-		logger.Warnf("uploadFileRequest.marshal error :%s", err.Error())
+		logger.Warn("uploadFileRequest.marshal error :", err.Error())
 		return nil, err
 	}
 	TcpSendData(conn, reqBuf)
@@ -195,7 +197,7 @@ func (this *StorageClient) storageUploadFile(tc *TrackerClient,
 		}
 	}
 	if err != nil {
-		logger.Warnf(err.Error())
+		logger.Warn(err)
 		return nil, err
 	}
 
@@ -245,7 +247,7 @@ func (this *StorageClient) storageDeleteFile(tc *TrackerClient, storeServ *Stora
 	req.remoteFilename = remoteFilename
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err)
 		return nil, err
 	}
 	TcpSendData(conn, reqBuf)
@@ -254,7 +256,7 @@ func (this *StorageClient) storageDeleteFile(tc *TrackerClient, storeServ *Stora
 	if th.status != 0 {
 		return nil, Errno{int(th.status)}
 	}
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 	/*recvBuff, recvSize, err := TcpRecvResponse(conn, th.pkgLen)
 	if recvSize <= int64(FDFS_GROUP_NAME_MAX_LEN) {
 		errmsg := "[-] Error: Storage response length is not match, "
@@ -315,7 +317,7 @@ func (this *StorageClient) storageDownloadFile(tc *TrackerClient,
 	req.remoteFilename = remoteFilename
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("downloadFileRequest.marshal error :%s", err.Error())
+		logger.Warn("downloadFileRequest.marshal error :", err.Error())
 		return nil, err
 	}
 	TcpSendData(conn, reqBuf)
@@ -336,7 +338,7 @@ func (this *StorageClient) storageDownloadFile(tc *TrackerClient,
 		}
 	}
 	if err != nil {
-		logger.Warnf(err.Error())
+		logger.Warn(err.Error())
 		return nil, err
 	}
 	if recvSize < downloadSize {
@@ -386,7 +388,7 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err.Error())
 		return nil, err
 	}
 	TcpSendData(conn, reqBuf)
@@ -395,7 +397,7 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 		return nil, Errno{int(th.status)}
 	}
 
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 
 	/*recvBuff, recvSize, err := TcpRecvResponse(conn, th.pkgLen)
 	if recvSize <= int64(FDFS_GROUP_NAME_MAX_LEN) {
@@ -454,7 +456,7 @@ func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName
 
 	th.recvHeader(conn)
 	if th.status != 0 {
-		logger.Warnf("recvHeader error [%d]", th.status)
+		logger.Warn("recvHeader error:", th.status)
 		return nil, Errno{int(th.status)}
 	}
 	var (
@@ -464,10 +466,10 @@ func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName
 		fileSize        int64
 		ipAddr          string
 	)
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 	recvBuff, _, err = TcpRecvResponse(conn, th.pkgLen)
 	if err != nil {
-		logger.Warnf("TcpRecvResponse error :%s", err.Error())
+		logger.Warn("TcpRecvResponse error :", err.Error())
 		return nil, err
 	}
 	buff := bytes.NewBuffer(recvBuff)
@@ -518,7 +520,7 @@ func (this *StorageClient) storageDoAppendBuffer(fileSize int64, fileBuffer []by
 
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err.Error())
 		return err
 	}
 	TcpSendData(conn, reqBuf)
@@ -528,7 +530,7 @@ func (this *StorageClient) storageDoAppendBuffer(fileSize int64, fileBuffer []by
 		return Errno{int(th.status)}
 	}
 
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 
 	return nil
 }
@@ -558,7 +560,7 @@ func (this *StorageClient) storageDoAppendFile(fileSize int64, localFileName str
 
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err.Error())
 		return err
 	}
 	TcpSendData(conn, reqBuf)
@@ -568,7 +570,7 @@ func (this *StorageClient) storageDoAppendFile(fileSize int64, localFileName str
 		return Errno{int(th.status)}
 	}
 
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 
 	return nil
 }
@@ -599,7 +601,7 @@ func (this *StorageClient) storageDoModifyFile(fileSize int64, localFileName str
 
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err.Error())
 		return err
 	}
 	TcpSendData(conn, reqBuf)
@@ -609,7 +611,7 @@ func (this *StorageClient) storageDoModifyFile(fileSize int64, localFileName str
 		return Errno{int(th.status)}
 	}
 
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 
 	return nil
 }
@@ -640,7 +642,7 @@ func (this *StorageClient) storageDoModifyBuffer(fileSize int64, fileBuffer []by
 
 	reqBuf, err = req.marshal()
 	if err != nil {
-		logger.Warnf("deleteFileRequest.marshal error :%s", err.Error())
+		logger.Warn("deleteFileRequest.marshal error :", err.Error())
 		return err
 	}
 	TcpSendData(conn, reqBuf)
@@ -650,6 +652,6 @@ func (this *StorageClient) storageDoModifyBuffer(fileSize int64, fileBuffer []by
 		return Errno{int(th.status)}
 	}
 
-	logger.Infof("pkg_len:%d", th.pkgLen)
+	logger.Info("pkg_len:", th.pkgLen)
 	return nil
 }

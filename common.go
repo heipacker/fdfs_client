@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/laohanlinux/go-logger/logger"
 )
 
 var (
@@ -26,7 +28,7 @@ func getConf(ConfPath string) (*Config, error) {
 	fc := &FdfsConfigParser{}
 	cf, err := fc.Read(ConfPath)
 	if err != nil {
-		logger.Errorf("Read conf error :%s", err)
+		logger.Error("Read conf error :", err)
 		return nil, err
 	}
 
@@ -87,7 +89,7 @@ func getConf(ConfPath string) (*Config, error) {
 
 		/*} else if len(parts > 2) {
 
-																																																																																																																}*/
+		}*/
 		//if trackerIp != "" {
 		trackerIpList = append(trackerIpList, trackerIp)
 		//}

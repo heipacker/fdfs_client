@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"net"
+
+	"github.com/laohanlinux/go-logger/logger"
 )
 
 type TrackerClient struct {
@@ -40,7 +42,7 @@ func (this *TrackerClient) trackerQueryStorageStorWithoutGroup() (*StorageServer
 	)
 	recvBuff, _, err = TcpRecvResponse(conn, th.pkgLen)
 	if err != nil {
-		logger.Warnf("TcpRecvResponse error :%s", err.Error())
+		logger.Warn("TcpRecvResponse error :", err.Error())
 		return nil, err
 	}
 	buff := bytes.NewBuffer(recvBuff)
@@ -89,7 +91,7 @@ func (this *TrackerClient) trackerQueryStorageStorWithGroup(groupName string) (*
 
 	th.recvHeader(conn)
 	if th.status != 0 {
-		logger.Warnf("recvHeader error [%d]", th.status)
+		logger.Warn("recvHeader error:", th.status)
 		return nil, Errno{int(th.status)}
 	}
 
@@ -100,7 +102,7 @@ func (this *TrackerClient) trackerQueryStorageStorWithGroup(groupName string) (*
 	)
 	recvBuff, _, err = TcpRecvResponse(conn, th.pkgLen)
 	if err != nil {
-		logger.Warnf("TcpRecvResponse error :%s", err.Error())
+		logger.Warn("TcpRecvResponse error :", err.Error())
 		return nil, err
 	}
 	buff := bytes.NewBuffer(recvBuff)
@@ -161,7 +163,7 @@ func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename 
 
 	th.recvHeader(conn)
 	if th.status != 0 {
-		logger.Warnf("recvHeader error [%d]", th.status)
+		logger.Warn("recvHeader error:", th.status)
 		return nil, Errno{int(th.status)}
 	}
 
@@ -172,7 +174,7 @@ func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename 
 	)
 	recvBuff, _, err = TcpRecvResponse(conn, th.pkgLen)
 	if err != nil {
-		logger.Warnf("TcpRecvResponse error :%s", err.Error())
+		logger.Warn("TcpRecvResponse error:", err.Error())
 		return nil, err
 	}
 	buff := bytes.NewBuffer(recvBuff)

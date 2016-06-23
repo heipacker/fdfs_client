@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/laohanlinux/go-logger/logger"
 	"github.com/weilaihui/goconfig/config"
 )
 
@@ -170,7 +171,7 @@ func (this *FdfsClient) getFileInfo(remotFileId string) (*FileInfo, error) {
 func (fileInfo *FileInfo) Print() {
 
 	logger.Info("createtime:" + time.Unix(int64(fileInfo.CreateTimeStamp), 0).String())
-	logger.Infof("crc:%d", fileInfo.CRC32)
+	logger.Info("crc:", fileInfo.CRC32)
 	logger.Info("source ip:" + fileInfo.SourceIpAddress)
-	logger.Infof("filesize:%d", fileInfo.FileSize)
+	logger.Info("filesize:", fileInfo.FileSize)
 }

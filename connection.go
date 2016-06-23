@@ -8,6 +8,8 @@ import (
 	"net"
 	"os"
 	"time"
+
+	"github.com/laohanlinux/go-logger/logger"
 )
 
 var ErrClosed = errors.New("pool is closed")
@@ -42,7 +44,7 @@ func minInt(a int, b int) int {
 func NewConnectionPool(hosts []string, ports []int, minConns int, maxConns int) (*ConnectionPool, error) {
 	if minConns < 0 || maxConns <= 0 || minConns > maxConns {
 		err := errors.New("invalid conns settings")
-		logger.Error(err.Error())
+		logger.Error(err)
 		return nil, err
 	}
 	cp := &ConnectionPool{
@@ -59,7 +61,7 @@ func NewConnectionPool(hosts []string, ports []int, minConns int, maxConns int) 
 		conn, err := cp.makeConn()
 		if err != nil {
 			cp.Close()
-			logger.Error("make connection error" + err.Error())
+			logger.Error("make connection error", err.Error())
 			return nil, err
 		}
 		cp.conns <- conn
@@ -113,7 +115,7 @@ func (this *ConnectionPool) Close() {
 	}
 
 	close(conns)
-	logger.Debugf("%d", len(conns))
+
 	for conn := range conns {
 		conn.Close()
 	}

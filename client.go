@@ -3,16 +3,11 @@ package fdfs_client
 import (
 	"errors"
 	"fmt"
-	"os"
-	"runtime"
-	/*"strconv"
-	"strings"*/
 
-	"github.com/Sirupsen/logrus"
+	"github.com/laohanlinux/go-logger/logger"
 )
 
 var (
-	logger                                          = logrus.New()
 	storagePoolChan      chan *storagePool          = make(chan *storagePool, 1)
 	storagePoolMap       map[string]*ConnectionPool = make(map[string]*ConnectionPool)
 	fetchStoragePoolChan chan interface{}           = make(chan interface{}, 1)
@@ -44,18 +39,6 @@ type storagePool struct {
 }*/
 
 func init() {
-	logger.Formatter = new(logrus.TextFormatter)
-	//logrus.SetFormatter(&logrus.TextFormatter{})
-	//logrus.SetOutput(os.Stdout)
-	//logrus.SetLevel(logrus.DebugLevel)
-	logger.Level = logrus.DebugLevel
-	logger.Out = os.Stdout
-	/*logger.WithFields(logrus.Fields{
-		"animal": "walrus",
-		"size":   10,
-	}).Info("A group of walrus emerges from the ocean")*/
-	//logger.Info("A group of walrus emerges from the ocean")
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	go func() {
 		// start a loop
 		for {
