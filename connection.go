@@ -126,14 +126,15 @@ func (this *ConnectionPool) Len() int {
 func (this *ConnectionPool) makeConn() (net.Conn, error) {
 	//var n int
 	// for {
-	// my be locked
+	// mybe locked
 	// 	n = rand.Intn(len(this.hosts))
 	// 	if !this.busyConns[n] {
 	// 		this.busyConns[n] = true
 	// 		break
 	// 	}
 	// }
-	host := this.hosts[this.r.Intn(len(this.hosts))]
+	n := this.r.Intn(len(this.hosts))
+	host := this.hosts[n]
 	//host := this.hosts[rand.Intn(len(this.hosts))]
 	addr := fmt.Sprintf("%s:%d", host, this.ports[n])
 
