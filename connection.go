@@ -28,6 +28,7 @@ type ConnectionPool struct {
 	maxConns  int
 	busyConns []bool
 	conns     chan net.Conn
+	r         *rand.Rand
 }
 
 func minInt(a int, b int) int {
@@ -51,6 +52,7 @@ func NewConnectionPool(hosts []string, ports []int, minConns int, maxConns int) 
 		maxConns:  maxConns,
 		conns:     make(chan net.Conn, maxConns),
 		busyConns: make([]bool, len(hosts)),
+		r:         rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 	//logger.Debug("cp made")
 	for i := 0; i < minInt(MINCONN, len(hosts)); i++ {
@@ -62,6 +64,8 @@ func NewConnectionPool(hosts []string, ports []int, minConns int, maxConns int) 
 		}
 		cp.conns <- conn
 	}
+	// set rand time
+
 	return cp, nil
 }
 
@@ -120,15 +124,17 @@ func (this *ConnectionPool) Len() int {
 }
 
 func (this *ConnectionPool) makeConn() (net.Conn, error) {
-	var n int
-	for {
-		n = rand.Intn(len(this.hosts))
-		if !this.busyConns[n] {
-			this.busyConns[n] = true
-			break
-		}
-	}
-	host := this.hosts[n]
+	//var n int
+	// for {
+	// my be locked
+	// 	n = rand.Intn(len(this.hosts))
+	// 	if !this.busyConns[n] {
+	// 		this.busyConns[n] = true
+	// 		break
+	// 	}
+	// }
+	host := this.hosts[this.r.Intn(len(this.hosts))]
+	//host := this.hosts[rand.Intn(len(this.hosts))]
 	addr := fmt.Sprintf("%s:%d", host, this.ports[n])
 
 	return net.DialTimeout("tcp", addr, time.Minute)
