@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/laohanlinux/go-logger/logger"
@@ -19,18 +19,20 @@ type pConn struct {
 	pool *ConnectionPool
 }
 
+// not recycle the connection
 func (c pConn) Close() error {
 	return c.pool.put(c.Conn)
 }
 
 type ConnectionPool struct {
-	hosts     []string
-	ports     []int
-	minConns  int
-	maxConns  int
-	busyConns []bool
-	conns     chan net.Conn
-	r         *rand.Rand
+	hosts      []string
+	ports      []int
+	minConns   int
+	maxConns   int
+	busyConns  []bool
+	conns      chan net.Conn
+	trackerIdx int
+	idxLock    sync.Locker
 }
 
 func minInt(a int, b int) int {
@@ -48,62 +50,71 @@ func NewConnectionPool(hosts []string, ports []int, minConns int, maxConns int) 
 		return nil, err
 	}
 	cp := &ConnectionPool{
-		hosts:     hosts,
-		ports:     ports,
-		minConns:  minConns,
-		maxConns:  maxConns,
-		conns:     make(chan net.Conn, maxConns),
-		busyConns: make([]bool, len(hosts)),
-		r:         rand.New(rand.NewSource(time.Now().UnixNano())),
+		hosts:      hosts,
+		ports:      ports,
+		minConns:   minConns,
+		maxConns:   maxConns,
+		conns:      make(chan net.Conn, maxConns),
+		busyConns:  make([]bool, len(hosts)),
+		trackerIdx: 0,
+		idxLock:    &sync.Mutex{},
 	}
-	//logger.Debug("cp made")
 	for i := 0; i < minInt(MINCONN, len(hosts)); i++ {
 		conn, err := cp.makeConn()
 		if err != nil {
-			cp.Close()
-			logger.Error("make connection error", err.Error())
-			return nil, err
+			logger.Fatal("make connection error", err.Error())
+			break
 		}
 		cp.conns <- conn
 	}
 	// set rand time
-
 	return cp, nil
 }
 
+// Get return a tracker activeConn if successfauly.
 func (this *ConnectionPool) Get() (net.Conn, error) {
 	conns := this.getConns()
 	if conns == nil {
-		return nil, ErrClosed
+		logger.Fatal(this.conns)
+		//return nil, ErrClosed
 	}
 
+	tryTime := this.maxConns
 	for {
 		select {
 		case conn := <-conns:
 			if conn == nil {
 				break
-				//return nil, ErrClosed
 			}
 			if err := this.activeConn(conn); err != nil {
+				logger.Error("check the connection alive error:", conn.RemoteAddr(), err)
 				break
 			}
+			logger.Debug("tracker connection is:", conn.RemoteAddr().String(), " at this time")
 			return this.wrapConn(conn), nil
 		default:
+
 			if this.Len() >= this.maxConns {
 				errmsg := fmt.Sprintf("Too many connctions %d", this.Len())
 				return nil, errors.New(errmsg)
 			}
 			conn, err := this.makeConn()
-			if err != nil {
-				return nil, err
+			if err != nil && tryTime > 0 {
+				logger.Error("can not get activeConn:", err, conn)
+				break
 			}
-
+			if err := this.activeConn(conn); err != nil && tryTime > 0 {
+				break
+			}
+			if tryTime == 0 {
+				return nil, errors.New("can not get the activeConn")
+			}
 			this.conns <- conn
 			//put connection to pool and go next `for` loop
 			//return this.wrapConn(conn), nil
 		}
+		tryTime--
 	}
-
 }
 
 func (this *ConnectionPool) Close() {
@@ -125,22 +136,23 @@ func (this *ConnectionPool) Len() int {
 	return len(this.getConns())
 }
 
+// use robin type
 func (this *ConnectionPool) makeConn() (net.Conn, error) {
-	//var n int
-	// for {
-	// mybe locked
-	// 	n = rand.Intn(len(this.hosts))
-	// 	if !this.busyConns[n] {
-	// 		this.busyConns[n] = true
-	// 		break
-	// 	}
-	// }
-	n := this.r.Intn(len(this.hosts))
-	host := this.hosts[n]
-	//host := this.hosts[rand.Intn(len(this.hosts))]
-	addr := fmt.Sprintf("%s:%d", host, this.ports[n])
+	this.idxLock.Lock()
+	idx := int(this.trackerIdx)
+	addr := fmt.Sprintf("%s:%d", this.hosts[idx], this.ports[idx])
+	this.trackerIdx++
+	if this.trackerIdx >= len(this.hosts) {
+		this.trackerIdx = 0
+	}
+	this.idxLock.Unlock()
 
-	return net.DialTimeout("tcp", addr, time.Minute)
+	c, err := net.DialTimeout("tcp", addr, time.Second*1)
+	if err != nil {
+		return c, err
+	}
+	c.SetDeadline(time.Now().Add(time.Duration(30) * time.Second))
+	return c, err
 }
 
 func (this *ConnectionPool) getConns() chan net.Conn {
@@ -155,13 +167,14 @@ func (this *ConnectionPool) put(conn net.Conn) error {
 	if this.conns == nil {
 		return conn.Close()
 	}
+	return conn.Close()
 
-	select {
-	case this.conns <- conn:
-		return nil
-	default:
-		return conn.Close()
-	}
+	//select {
+	//case this.conns <- conn:
+	//	return nil
+	//default:
+	//	return conn.Close()
+	//}
 }
 
 func (this *ConnectionPool) wrapConn(conn net.Conn) net.Conn {

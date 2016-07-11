@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"github.com/laohanlinux/go-logger/logger"
 )
@@ -108,7 +109,7 @@ func (this *StorageClient) storagstorageModifyByBuffer(tc *TrackerClient, storeS
 
 	fileSize := int64(len(fileBuffer))
 	logger.Info("unknown filesize", fileSize)
-	return this.storageDoModifyBuffer(fileSize, fileBuffer, offset, groupName, remoteFileName)
+	return this.storageDoModifyBuffer(storeServ, fileSize, fileBuffer, offset, groupName, remoteFileName)
 }
 
 func (this *StorageClient) storageModifyByfileName(tc *TrackerClient, storeServ *StorageServer, localFileName string,
@@ -418,14 +419,15 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 	return dr, nil
 
 }
-func (this *StorageClient) storageQueryFileInfo(groupName string, remoteFileName string) (*FileInfo, error) {
+func (this *StorageClient) storageQueryFileInfo(sServ *StorageServer, groupName string, remoteFileName string) (*FileInfo, error) {
 	var (
 		conn     net.Conn
 		recvBuff []byte
 		err      error
 	)
 
-	conn, err = this.pool.Get()
+	//conn, err = this.pool.Get()
+	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", sServ.ipAddr, sServ.port))
 	defer conn.Close()
 	if err != nil {
 		return nil, err
@@ -616,15 +618,16 @@ func (this *StorageClient) storageDoModifyFile(fileSize int64, localFileName str
 	return nil
 }
 
-func (this *StorageClient) storageDoModifyBuffer(fileSize int64, fileBuffer []byte, offset int64,
+func (this *StorageClient) storageDoModifyBuffer(sServ *StorageServer, fileSize int64, fileBuffer []byte, offset int64,
 	groupName string, remoteFileName string) error {
 	var (
 		conn   net.Conn
 		reqBuf []byte
 		err    error
 	)
-
-	conn, err = this.pool.Get()
+	fmt.Println("get the storage connection by self")
+	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", sServ.ipAddr, sServ.port))
+	//conn, err = this.pool.Get()
 	defer conn.Close()
 	if err != nil {
 		return err
@@ -654,4 +657,13 @@ func (this *StorageClient) storageDoModifyBuffer(fileSize int64, fileBuffer []by
 
 	logger.Info("pkg_len:", th.pkgLen)
 	return nil
+}
+
+func (this *StorageClient) GetStorageConn(addr string) (net.Conn, error) {
+	c, err := net.DialTimeout("tcp", addr, time.Second*1)
+	if err != nil {
+		return c, err
+	}
+	c.SetDeadline(time.Now().Add(time.Duration(30) * time.Second))
+	return c, err
 }

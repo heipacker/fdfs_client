@@ -130,10 +130,10 @@ func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename 
 	)
 
 	conn, err = this.pool.Get()
-	defer conn.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	th := &trackerHeader{}
 	th.pkgLen = int64(FDFS_GROUP_NAME_MAX_LEN + len(remoteFilename))
