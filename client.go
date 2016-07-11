@@ -301,12 +301,12 @@ func (this *FdfsClient) TruncAppenderByFilename(remoteFileId string, truncatedFi
 		return nil, err
 	}
 
-	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
-	if err != nil {
-		return nil, err
-	}
+	//storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	store := &StorageClient{storagePool}
+	store := &StorageClient{}
 
 	return store.storageTruncateFile(tc, storeServ, remoteFilename, truncatedFileSize)
 }
@@ -359,7 +359,7 @@ func (this *FdfsClient) ModifyByBuffer(fileBuffer []byte, offset int64, groupNam
 	//}
 
 	store := &StorageClient{}
-	return store.storagstorageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
+	return store.storageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
 }
 
 func (this *FdfsClient) ModifyByFileName(localFileName string, offset int64, groupName string, remoteFileName string) error {
@@ -370,12 +370,12 @@ func (this *FdfsClient) ModifyByFileName(localFileName string, offset int64, gro
 		return err
 	}
 
-	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
-	if err != nil {
-		return err
-	}
+	//	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
+	//	if err != nil {
+	//		return err
+	//	}
 
-	store := &StorageClient{storagePool}
+	store := &StorageClient{}
 	return store.storageModifyByfileName(tc, storeServ, localFileName, offset, groupName, remoteFileName)
 }
 

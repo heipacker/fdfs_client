@@ -101,7 +101,7 @@ func (this *StorageClient) storageAppendByfileName(tc *TrackerClient, storeServ 
 	return this.storageDoAppendFile(fileSize, localFileName, groupName, remoteFileName)
 }
 
-func (this *StorageClient) storagstorageModifyByBuffer(tc *TrackerClient, storeServ *StorageServer, fileBuffer []byte,
+func (this *StorageClient) storageModifyByBuffer(tc *TrackerClient, storeServ *StorageServer, fileBuffer []byte,
 	offset int64, groupName string, remoteFileName string) error {
 	if remoteFileName == "" || groupName == " " {
 		return errors.New("Invalid group name or append file name")
@@ -368,8 +368,9 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 		reqBuf []byte
 		err    error
 	)
-
-	conn, err = this.pool.Get()
+	fmt.Println("get the storage connection by self")
+	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
+	//conn, err = this.pool.Get()
 	defer conn.Close()
 	if err != nil {
 		return nil, err
