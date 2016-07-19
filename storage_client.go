@@ -368,7 +368,7 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 		reqBuf []byte
 		err    error
 	)
-	fmt.Println("get the storage connection by self")
+	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
 	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
 	//conn, err = this.pool.Get()
 	defer conn.Close()
@@ -626,7 +626,7 @@ func (this *StorageClient) storageDoModifyBuffer(sServ *StorageServer, fileSize 
 		reqBuf []byte
 		err    error
 	)
-	fmt.Println("get the storage connection by self")
+	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", sServ.ipAddr, sServ.port)
 	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", sServ.ipAddr, sServ.port))
 	//conn, err = this.pool.Get()
 	defer conn.Close()

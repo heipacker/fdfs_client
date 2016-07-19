@@ -137,6 +137,7 @@ func (this *ConnectionPool) Len() int {
 }
 
 // use robin type
+/*
 func (this *ConnectionPool) makeConn() (net.Conn, error) {
 	this.idxLock.Lock()
 	idx := int(this.trackerIdx)
@@ -147,12 +148,29 @@ func (this *ConnectionPool) makeConn() (net.Conn, error) {
 	}
 	this.idxLock.Unlock()
 
-	c, err := net.DialTimeout("tcp", addr, time.Second*1)
+	c, err := net.DialTimeout("tcp", addr, time.Second*10)
 	if err != nil {
 		return c, err
 	}
-	c.SetDeadline(time.Now().Add(time.Duration(30) * time.Second))
+	c.SetDeadline(time.Now().Add(time.Duration(60) * time.Second))
 	return c, err
+}
+*/
+// use robin type
+func (this *ConnectionPool) makeConn() (net.Conn, error) {
+
+	for i := 0; i < len(this.hosts); i++ {
+		addr := fmt.Sprintf("%s:%d", this.hosts[i], this.ports[i])
+		c, err := net.DialTimeout("tcp", addr, time.Second*10)
+		if err != nil {
+			return c, err
+		}
+		c.SetDeadline(time.Now().Add(time.Duration(60) * time.Second))
+		logger.Info("The tracker addr is: ", addr)
+		return c, err
+	}
+
+	return nil, fmt.Errorf("all tracker is dead")
 }
 
 func (this *ConnectionPool) getConns() chan net.Conn {
