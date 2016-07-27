@@ -230,8 +230,8 @@ func (this *FdfsClient) DeleteFile(remoteFileId string) (*DeleteFileResponse, er
 		return nil, err
 	}
 
-	storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
-	store := &StorageClient{storagePool}
+	//storagePool, err := this.getStoragePool(storeServ.ipAddr, storeServ.port)
+	store := &StorageClient{}
 
 	return store.storageDeleteFile(tc, storeServ, remoteFilename)
 }

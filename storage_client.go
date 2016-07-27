@@ -231,7 +231,9 @@ func (this *StorageClient) storageDeleteFile(tc *TrackerClient, storeServ *Stora
 		err    error
 	)
 
-	conn, err = this.pool.Get()
+	//conn, err = this.pool.Get()
+	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
+	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
 	defer conn.Close()
 	if err != nil {
 		return nil, err
