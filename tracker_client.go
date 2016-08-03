@@ -12,14 +12,18 @@ type TrackerClient struct {
 	pool *ConnectionPool
 }
 
-func (this *TrackerClient) trackerQueryStorageStorWithoutGroup() (*StorageServer, error) {
+func (this *TrackerClient) trackerQueryStorageStorWithoutGroup(trackerAddr ...string) (*StorageServer, error) {
 	var (
 		conn     net.Conn
 		recvBuff []byte
 		err      error
 	)
 
-	conn, err = this.pool.Get()
+	if trackerAddr != nil {
+		conn, err = makeConnByTrackerAddr(trackerAddr[0])
+	} else {
+		conn, err = this.pool.Get()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -114,24 +118,27 @@ func (this *TrackerClient) trackerQueryStorageStorWithGroup(groupName string) (*
 	return &StorageServer{ipAddr, int(port), groupName, int(storePathIndex)}, nil
 }
 
-func (this *TrackerClient) trackerQueryStorageUpdate(groupName string, remoteFilename string) (*StorageServer, error) {
-	return this.trackerQueryStorage(groupName, remoteFilename, TRACKER_PROTO_CMD_SERVICE_QUERY_UPDATE)
+func (this *TrackerClient) trackerQueryStorageUpdate(groupName string, remoteFilename string, trackerAddr ...string) (*StorageServer, error) {
+	return this.trackerQueryStorage(groupName, remoteFilename, TRACKER_PROTO_CMD_SERVICE_QUERY_UPDATE, trackerAddr...)
 }
 
-func (this *TrackerClient) trackerQueryStorageFetch(groupName string, remoteFilename string) (*StorageServer, error) {
-	return this.trackerQueryStorage(groupName, remoteFilename, TRACKER_PROTO_CMD_SERVICE_QUERY_FETCH_ONE)
+func (this *TrackerClient) trackerQueryStorageFetch(groupName, remoteFilename string, trackerAddr ...string) (*StorageServer, error) {
+	return this.trackerQueryStorage(groupName, remoteFilename, TRACKER_PROTO_CMD_SERVICE_QUERY_FETCH_ONE, trackerAddr...)
 }
 
-func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename string, cmd int8) (*StorageServer, error) {
+func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename string, cmd int8, trackerAddr ...string) (*StorageServer, error) {
 	var (
 		conn     net.Conn
 		recvBuff []byte
 		err      error
 	)
-
-	conn, err = this.pool.Get()
-	if err != nil {
-		return nil, err
+	if trackerAddr != nil {
+		conn, err = makeConnByTrackerAddr(trackerAddr[0])
+	} else {
+		conn, err = this.pool.Get()
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer conn.Close()
 

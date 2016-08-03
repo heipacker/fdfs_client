@@ -216,6 +216,16 @@ func (this *FdfsClient) UploadAppenderByBuffer(filebuffer []byte, fileExtName st
 	return store.storageUploadAppenderByBuffer(tc, storeServ, filebuffer, fileExtName)
 }
 
+func (this *FdfsClient) UploadAppenderByBufferAndTracker(fileBuffer []byte, fileExtName, trackerAddr string) (*UploadFileResponse, error) {
+	tc := &TrackerClient{this.trackerPool}
+	storeServ, err := tc.trackerQueryStorageStorWithoutGroup(trackerAddr)
+	if err != nil {
+		return nil, err
+	}
+	store := &StorageClient{}
+	return store.storageUploadAppenderByBuffer(tc, storeServ, fileBuffer, fileExtName)
+}
+
 func (this *FdfsClient) DeleteFile(remoteFileId string) (*DeleteFileResponse, error) {
 	tmp, err := splitRemoteFileId(remoteFileId)
 	if err != nil || len(tmp) != 2 {
@@ -255,6 +265,7 @@ func (this *FdfsClient) DownloadToFile(localFilename string, remoteFileId string
 
 	return store.storageDownloadToFile(tc, storeServ, localFilename, offset, downloadSize, remoteFilename)
 }
+
 func (this *FdfsClient) QueryFileInfo(groupName string, remoteFileName string) (*FileInfo, error) {
 	tc := &TrackerClient{this.trackerPool}
 	storeServ, err := tc.trackerQueryStorageFetch(groupName, remoteFileName)
@@ -266,6 +277,17 @@ func (this *FdfsClient) QueryFileInfo(groupName string, remoteFileName string) (
 	store := &StorageClient{}
 	return store.storageQueryFileInfo(storeServ, groupName, remoteFileName)
 }
+
+func (this *FdfsClient) QueryFileInfoByTracker(groupName, remoteFileName, trackerAddr string) (*FileInfo, error) {
+	tc := &TrackerClient{this.trackerPool}
+	storeServ, err := tc.trackerQueryStorageFetch(groupName, remoteFileName, trackerAddr)
+	if err != nil {
+		return nil, err
+	}
+	store := &StorageClient{}
+	return store.storageQueryFileInfo(storeServ, groupName, remoteFileName)
+}
+
 func (this *FdfsClient) DownloadToBuffer(remoteFileId string, offset int64, downloadSize int64) (*DownloadFileResponse, error) {
 	tmp, err := splitRemoteFileId(remoteFileId)
 	if err != nil || len(tmp) != 2 {
@@ -358,6 +380,16 @@ func (this *FdfsClient) ModifyByBuffer(fileBuffer []byte, offset int64, groupNam
 	//	return err
 	//}
 
+	store := &StorageClient{}
+	return store.storageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
+}
+
+func (this *FdfsClient) ModifyByBufferAndTracker(fileBuffer []byte, offset int64, groupName, remoteFileName, trackerAddr string) error {
+	tc := &TrackerClient{this.trackerPool}
+	storeServ, err := tc.trackerQueryStorageStorWithoutGroup(trackerAddr)
+	if err != nil {
+		return err
+	}
 	store := &StorageClient{}
 	return store.storageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
 }

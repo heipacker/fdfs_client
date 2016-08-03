@@ -173,6 +173,16 @@ func (this *ConnectionPool) makeConn() (net.Conn, error) {
 	return nil, fmt.Errorf("all tracker is dead")
 }
 
+func makeConnByTrackerAddr(addr string) (net.Conn, error) {
+	c, err := net.DialTimeout("tcp", addr, time.Second*10)
+	if err != nil {
+		return c, err
+	}
+	c.SetDeadline(time.Now().Add(time.Duration(60) * time.Second))
+	logger.Infof("The tracker addr is: %s", addr)
+	return c, err
+}
+
 func (this *ConnectionPool) getConns() chan net.Conn {
 	conns := this.conns
 	return conns
