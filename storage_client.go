@@ -221,6 +221,8 @@ func (this *StorageClient) storageUploadFile(tc *TrackerClient,
 		return nil, errors.New(errmsg)
 	}
 
+	// add store obj
+	ur.StoreServ = *storeServ
 	return ur, nil
 }
 

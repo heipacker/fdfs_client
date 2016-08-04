@@ -278,6 +278,7 @@ func (this *uploadSlaveFileRequest) marshal() ([]byte, error) {
 type UploadFileResponse struct {
 	GroupName    string
 	RemoteFileId string
+	StoreServ    StorageServer
 }
 
 // recv_fmt: |-group_name(16)-remote_file_name(recv_size - 16)-|

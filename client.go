@@ -394,6 +394,11 @@ func (this *FdfsClient) ModifyByBufferAndTracker(fileBuffer []byte, offset int64
 	return store.storageModifyByBuffer(tc, storeServ, fileBuffer, offset, groupName, remoteFileName)
 }
 
+func (this *FdfsClient) ModifyByBufferAndStorage(fileBuffer []byte, offset int64, groupName, remoteFileName string, storeServ StorageServer) error {
+	store := &StorageClient{}
+	return store.storageModifyByBuffer(nil, &storeServ, fileBuffer, offset, groupName, remoteFileName)
+}
+
 func (this *FdfsClient) ModifyByFileName(localFileName string, offset int64, groupName string, remoteFileName string) error {
 	tc := &TrackerClient{this.trackerPool}
 
