@@ -146,7 +146,9 @@ func (this *StorageClient) storageUploadFile(tc *TrackerClient,
 		err         error
 	)
 
-	conn, err = this.pool.Get()
+	//conn, err = this.pool.Get()
+	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
+	logger.Debugf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
 	defer conn.Close()
 	if err != nil {
 		return nil, err
@@ -234,7 +236,7 @@ func (this *StorageClient) storageDeleteFile(tc *TrackerClient, storeServ *Stora
 	)
 
 	//conn, err = this.pool.Get()
-	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
+	logger.Debugf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
 	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
 	defer conn.Close()
 	if err != nil {
@@ -372,7 +374,7 @@ func (this *StorageClient) storageTruncateFile(tc *TrackerClient, storeServ *Sto
 		reqBuf []byte
 		err    error
 	)
-	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
+	logger.Debugf("get the storage connection by self, storage addr %s:%d\n", storeServ.ipAddr, storeServ.port)
 	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", storeServ.ipAddr, storeServ.port))
 	//conn, err = this.pool.Get()
 	defer conn.Close()
@@ -630,7 +632,7 @@ func (this *StorageClient) storageDoModifyBuffer(sServ *StorageServer, fileSize 
 		reqBuf []byte
 		err    error
 	)
-	fmt.Printf("get the storage connection by self, storage addr %s:%d\n", sServ.ipAddr, sServ.port)
+	logger.Debugf("get the storage connection by self, storage addr %s:%d\n", sServ.ipAddr, sServ.port)
 	conn, err = this.GetStorageConn(fmt.Sprintf("%s:%d", sServ.ipAddr, sServ.port))
 	//conn, err = this.pool.Get()
 	defer conn.Close()

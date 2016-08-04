@@ -180,7 +180,24 @@ func makeConnByTrackerAddr(addr string) (net.Conn, error) {
 	}
 	c.SetDeadline(time.Now().Add(time.Duration(60) * time.Second))
 	logger.Infof("The tracker addr is: %s", addr)
+	if err != nil {
+		return nil, err
+	}
+	if err = activeConn(c); err != nil {
+		return nil, err
+	}
 	return c, err
+}
+
+func activeConn(conn net.Conn) error {
+	th := &trackerHeader{}
+	th.cmd = FDFS_PROTO_CMD_ACTIVE_TEST
+	th.sendHeader(conn)
+	th.recvHeader(conn)
+	if th.cmd == 100 && th.status == 0 {
+		return nil
+	}
+	return errors.New("Conn unaliviable")
 }
 
 func (this *ConnectionPool) getConns() chan net.Conn {
