@@ -136,9 +136,9 @@ func (this *TrackerClient) trackerQueryStorage(groupName string, remoteFilename 
 		conn, err = makeConnByTrackerAddr(trackerAddr[0])
 	} else {
 		conn, err = this.pool.Get()
-		if err != nil {
-			return nil, err
-		}
+	}
+	if err != nil {
+		return nil, err
 	}
 	defer conn.Close()
 
