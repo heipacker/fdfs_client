@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -162,6 +165,19 @@ type StorageServer struct {
 	port           int
 	groupName      string
 	storePathIndex int
+}
+
+func NewStorageServer(addr string) *StorageServer {
+	ipPort := strings.Split(addr, ":")
+	port, _ := strconv.Atoi(ipPort[1])
+	return &StorageServer{
+		ipAddr: ipPort[0],
+		port:   port,
+	}
+}
+
+func (ss StorageServer) AddrString() string {
+	return fmt.Sprintf("%s:%d", ss.ipAddr, ss.port)
 }
 
 type trackerHeader struct {
