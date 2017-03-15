@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	logger "github.com/Sirupsen/logrus"
 	//"strings"
 	"testing"
 	"time"
@@ -39,7 +39,7 @@ func TestNewFdfsClientByTracker(t *testing.T) {
 }
 
 func TestUploadByFilename(t *testing.T) {
-	logger.WithFields(logrus.Fields{
+	logger.WithFields(logger.Fields{
 		"file":     "client_test.go",
 		"function": "TestUploadByFilename",
 	}).Info("Begin to upload by filename")
